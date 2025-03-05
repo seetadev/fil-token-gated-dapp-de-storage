@@ -1,6 +1,5 @@
-# web3-medical-invoice-token-gated
-Web3 Medical Invoice - token gated features
-
+# web3-medical-invoice
+Web3 Medical Invoice
 ## Prerequisites
 
 Ensure you have the following installed on your machine:
