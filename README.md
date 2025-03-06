@@ -120,3 +120,24 @@ ionic serve
    ```bash
    ionic cap open ios
    ```
+
+
+### Storacha/IPFS
+
+1. Setup your Storacha client by giving your email, it'll send an authorization mail where you have to validate the req
+   ![image](https://github.com/user-attachments/assets/c7a2f169-c470-4f09-b57e-e6138c2410de)
+
+2. Modify any content on the spreadsheet and Save the file using saveAs, yyou'll get your CID that is uploaded to your storacha space which is created automatically when you do 1st step
+   ![image](https://github.com/user-attachments/assets/b67a39b3-08d2-4d4c-bc69-789d16345e81)
+
+3. Check your Storacha console for the files that are being uploaded
+   ![image](https://github.com/user-attachments/assets/53a9d0bf-847b-48a0-9bbf-d28ac2c1d67c)
+
+4. When file uploads are done you can try refreshing for retrieving the files at IPFS files section
+   ![image](https://github.com/user-attachments/assets/b0e90e34-d781-41a0-ae31-b576bbabea55)
+
+5. And then you can move these files to the Local storage
+   ![image](https://github.com/user-attachments/assets/4215d42b-41ad-43f4-8e4d-ea277ff79bc1)
+
+
+
