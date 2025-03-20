@@ -54,38 +54,44 @@ const Files: React.FC<{
   const [isSpaceCreating, setIsSpaceCreating] = useState(false);
 
   // Initialize IPFS client
-  const initializeIpfsClient = async (email) => {
+  const initializeIpfsClient = async (email,space) => {
     try {
       setLoading(true);
       const client = await createClient();
+      console.log("Client created:", client);
+      
       const account = await client.login(email);
+      console.log("Account logged in:", account);
+      
+      const currSpace = await client.setCurrentSpace(space);
+      console.log("Current space set:", currSpace);
+      setUserSpace(space);
       
       // Store client in state
       setIpfsClient(client);
       
       // Check if user has any spaces
-      const spaces = await client.spaces();
-      if (spaces.length > 0) {
-        // Use the first space
-        await client.setCurrentSpace(spaces[0].did());
-        let currentspace = await client.createSpace('Upload Space', { skipGatewayAuthorization: true })
-        await client.addSpace(await currentspace.createAuthorization(client))
-        await account.provision(currentspace.did())
-        await client.setCurrentSpace(currentspace.did());
-        const recovery = await currentspace.createRecovery(account.did())
-        await client.capability.access.delegate({
-          space: currentspace.did(),
-          delegations: [recovery],
-        })
-        setUserSpace(currentspace);
-        console.log(currentspace);
+      // const spaces = await client.spaces();
+      // if (spaces.length > 0) {
+      //   // Use the first space
+      //   await client.setCurrentSpace(spaces[0].did());
+      //   let currentspace = await client.createSpace('Upload Space', { skipGatewayAuthorization: true })
+      //   await client.addSpace(await currentspace.createAuthorization(client))
+      //   await account.provision(currentspace.did())
+      //   await client.setCurrentSpace(currentspace.did());
+      //   const recovery = await currentspace.createRecovery(account.did())
+      //   await client.capability.access.delegate({
+      //     space: currentspace.did(),
+      //     delegations: [recovery],
+      //   })
+      //   setUserSpace(currentspace);
         
         localStorage.setItem('ipfsUserEmail', email);
-        localStorage.setItem('ipfsUserSpace', currentspace.did());
-      } else {
-        // Show space setup UI
-        setShowSpaceSetup(true);
-      }
+        localStorage.setItem('ipfsUserSpace', userSpace);
+      // } else {
+      //   // Show space setup UI
+      //   setShowSpaceSetup(true);
+      // }
       
       return client;
     } catch (error) {
@@ -317,13 +323,14 @@ const Files: React.FC<{
 
   const handleEmailSubmit = async () => {
     console.log(userEmail);
+    console.log(userSpace);
     
     // if (!userEmail || !userEmail.includes('@')) {
     //   alert('Please enter a valid email address');
     //   return;
     // }
     
-    await initializeIpfsClient(userEmail);
+    await initializeIpfsClient(userEmail,userSpace);
     setShowEmailInput(false);
   };
 
@@ -389,6 +396,12 @@ const Files: React.FC<{
                 placeholder="Your email address"
                 value={userEmail}
                 onIonChange={e => setUserEmail(e.detail.value)}
+              />
+              <IonInput
+                type="text"
+                placeholder="Your Space DID KEY"
+                value={userSpace}
+                onIonChange={e => setUserSpace(e.detail.value)}
               />
               <IonButton 
                 expand="block" 
@@ -472,7 +485,7 @@ const Files: React.FC<{
           <>
             <IonCard>
               <IonCardContent>
-                <p><strong>Your IPFS Space:</strong> {userSpace ? userSpace.did().substring(0, 20) + '...' : 'Not set'}</p>
+                <p><strong>Your IPFS Space:</strong> {userSpace ? userSpace.substring(0, 20) + '...' : 'Not set'}</p>
                 <IonButton 
                   expand="block" 
                   onClick={fetchIPFSFiles}
