@@ -53,7 +53,6 @@ const Files: React.FC<{
   const [spaceDid, setSpaceDid] = useState('');
   const [isSpaceCreating, setIsSpaceCreating] = useState(false);
 
-  // Initialize IPFS client
   const initializeIpfsClient = async (email,space) => {
     try {
       setLoading(true);
@@ -63,8 +62,10 @@ const Files: React.FC<{
       const account = await client.login(email);
       console.log("Account logged in:", account);
       
+      console.log("Setting current space:", space);
       const currSpace = await client.setCurrentSpace(space);
       console.log("Current space set:", currSpace);
+      
       setUserSpace(space);
       
       // Store client in state
@@ -147,25 +148,20 @@ const Files: React.FC<{
     
     setLoading(true);
     try {
-      // List all uploads in the user's space
       const uploads = await ipfsClient.capability.upload.list();
       console.log(uploads.results);
       
       
-      // Process each upload to get file details
       const filesPromises = uploads.results.map(async (upload) => {
         try {
-          // Construct URL to fetch the file metadata
           const url = `https://${upload.root.toString()}.ipfs.w3s.link`;
           
-          // Try to fetch the directory listing
           const response = await fetch(url);
           if (!response.ok) {
             console.warn(`Failed to fetch directory for ${upload.root.toString()}`);
             return null;
           }
           
-          // Parse the directory listing
           const directoryListing = await response.text();
           console.log(directoryListing);
           
@@ -218,7 +214,6 @@ const Files: React.FC<{
     }
   };
 
-  // Function to retrieve a specific file from IPFS
   const retrieveFromIPFS = async (cid, path) => {
     if (!ipfsClient) {
       alert('Please set up your IPFS account first');
@@ -244,13 +239,11 @@ const Files: React.FC<{
     }
   };
 
-  // Function to move a file from IPFS to localStorage
   const moveToLocalStorage = async (file) => {
     try {
       const fileData = await retrieveFromIPFS(file.cid, file.path);
       console.log(fileData);
       
-      // Create a new Files object using the static create method
       const localFile = FilesClass.create(
         fileData.created,
         fileData.modified,
@@ -293,21 +286,21 @@ const Files: React.FC<{
     return new Date(date).toLocaleString();
   };
 
-  // Check for saved IPFS credentials on component mount
-  useEffect(() => {
-    const savedEmail = localStorage.getItem('ipfsUserEmail');
-    const savedSpace = localStorage.getItem('ipfsUserSpace');
+  // useEffect(() => {
+  //   const savedEmail = localStorage.getItem('ipfsUserEmail');
+  //   const savedSpace = localStorage.getItem('ipfsUserSpace');
     
-    if (savedEmail) {
-      setUserEmail(savedEmail);
-      // Initialize client with saved email
-      initializeIpfsClient(savedEmail).then(client => {
-        if (client && savedSpace) {
-          client.setCurrentSpace(savedSpace as DID).catch(console.error);
-        }
-      });
-    }
-  }, []);
+  //   if (savedEmail && savedSpace) {
+  //     setUserEmail(savedEmail);
+  //     setUserEmail(savedSpace);
+  //     // Initialize client with saved email
+  //     initializeIpfsClient(savedEmail,savedSpace).then(client => {
+  //       if (client && savedSpace) {
+  //         client.setCurrentSpace(savedSpace as DID).catch(console.error);
+  //       }
+  //     });
+  //   }
+  // }, []);
 
   useEffect(() => {
     if (fileSource === 'ipfs' && ipfsClient && userSpace && ipfsFiles.length === 0) {
@@ -325,10 +318,10 @@ const Files: React.FC<{
     console.log(userEmail);
     console.log(userSpace);
     
-    // if (!userEmail || !userEmail.includes('@')) {
-    //   alert('Please enter a valid email address');
-    //   return;
-    // }
+    if (!userEmail || !userEmail.includes('@')) {
+      alert('Please enter a valid email address');
+      return;
+    }
     
     await initializeIpfsClient(userEmail,userSpace);
     setShowEmailInput(false);

@@ -5,7 +5,7 @@ import { isPlatform, IonToast } from "@ionic/react";
 import { EmailComposer } from "capacitor-email-composer";
 import { Printer } from "@ionic-native/printer";
 import { IonActionSheet, IonAlert } from "@ionic/react";
-import { saveOutline, save, mail, print } from "ionicons/icons";
+import { saveOutline, save, mail, print, download } from "ionicons/icons";
 import medinvoiceabi from "../../utils/medinvoiceabi.json";
 import { APP_NAME } from "../../app-data.js";
 import { ethers } from "ethers";
@@ -301,10 +301,66 @@ const Menu: React.FC<{
           isHtml: true,
         });
       } else {
-        alert("This Functionality works on Android/IOS devices");
+        const subject = encodeURIComponent(`${APP_NAME} - Your Invoice`);
+        const body = encodeURIComponent("Please find the attached invoice.");
+        const mailtoLink = `mailto:?subject=${subject}&body=${body}`;
+        
+        window.open(mailtoLink, '_self');
+        
+        alert("Please attach it to the email that opens.");
       }
     } catch (error) {
       alert("Failed to process token payment");
+    }
+  };
+
+  const exportAsHTML = async () => {
+    // if (numOfTokens < Number(TOKEN_COST.EMAIL)) {
+    //     alert(`You need at least ${TOKEN_COST.EMAIL} PPT token to export the invoice`);
+    //     return;
+    // }
+
+    try {
+        // await updateTokenBalance('EMAIL');
+        const content = AppGeneral.getCurrentHTMLContent(); // Get the invoice content
+
+        // Create a Blob for the invoice content
+        const blob = new Blob([`
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <title>Invoice</title>
+            <meta charset="utf-8">
+            <style>
+              body { font-family: Arial, sans-serif; margin: 20px; }
+              .invoice-container { 
+                max-width: 800px; 
+                margin: 0 auto; 
+                border: 1px solid #ddd; 
+                padding: 20px; 
+              }
+            </style>
+          </head>
+          <body>
+            <div class="invoice-container">
+              ${content}
+            </div>
+          </body>
+          </html>
+        `], { type: 'text/html' });
+
+        // Create a download link
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `Invoice_${new Date().toISOString().split('T')[0]}.html`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        alert("Invoice has been exported as HTML file.");
+    } catch (error) {
+        console.error('Export error:', error);
+        alert("Failed to process token payment or export invoice. Please try again.");
     }
   };
 
@@ -357,6 +413,17 @@ const Menu: React.FC<{
                 await sendEmail();
               // } else {
               //   alert(`You need at least ${TOKEN_COST.EMAIL} MediToken to email`);
+              // }
+            },
+          },
+          {
+            text: "Export as HTML",
+            icon: download,
+            handler: async () => {
+              // if (numOfTokens >= Number(TOKEN_COST.EMAIL)) {
+                await exportAsHTML();
+              // } else {
+                // alert(`You need at least ${TOKEN_COST.EMAIL} PPT token to email`);
               // }
             },
           },
